@@ -2,15 +2,11 @@ from flask import Flask
 import os
 import ConfigParser
 from logging.handlers import RotatingFileHandler
-from flask.ext.pymongo import PyMongo
 from flask.ext.cors import CORS
-from app.utils.mongo_utils import MongoUtils
+from flask_sqlalchemy import SQLAlchemy
 
-# Create MongoDB database object.
-mongo = PyMongo()
-
-#Initialize mongo access point
-mongo_utils = MongoUtils(mongo)
+# SQLAlchemy
+db = SQLAlchemy();
 
 def create_app():
     # Here we  create flask instance
@@ -25,11 +21,11 @@ def create_app():
     # Configure logging.
     configure_logging(app)
 
+    # Initialize SQLAlchemy
+    db.init_app(app)
+
     # Init modules
     init_modules(app)
-
-    # Initialize the app to work with MongoDB
-    mongo.init_app(app, config_prefix='MONGO')
 
     return app
 
@@ -49,7 +45,8 @@ def load_config(app):
     config.read(config_filepath)
 
     app.config['SERVER_PORT'] = config.get('Application', 'SERVER_PORT')
-    app.config['MONGO_DBNAME'] = config.get('Mongo', 'DB_NAME')
+    app.config['SQLALCHEMY_DATABASE_URI'] = config.get('SQLAlchemy', 'SQLALCHEMY_DATABASE_URI')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Logging path might be relative or starts from the root.
     # If it's relative then be sure to prepend the path with the application's root directory path.
