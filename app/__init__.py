@@ -42,15 +42,26 @@ def load_config(app):
     # Read config file
     config = ConfigParser.RawConfigParser()
     config_filepath = app_dir + '/config.cfg'
-    config.read(config_filepath)
 
-    app.config['SERVER_PORT'] = config.get('Application', 'SERVER_PORT')
-    app.config['SQLALCHEMY_DATABASE_URI'] = config.get('SQLAlchemy', 'SQLALCHEMY_DATABASE_URI')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    # Testing app config
+    testapp_config_filepath = app_dir + '/test_app_config.cfg'
+
+    # Checking if config.cfg file exists
+    if os.path.isfile(config_filepath):
+        config.read(config_filepath)
+        app.config['SERVER_PORT'] = config.get('Application', 'SERVER_PORT')
+        app.config['SQLALCHEMY_DATABASE_URI'] = config.get('SQLAlchemy', 'SQLALCHEMY_DATABASE_URI')
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        log_path = config.get('Logging', 'PATH')
+    else:
+        config.read(testapp_config_filepath)
+        app.config['SERVER_PORT'] = config.get('Application', 'SERVER_PORT')
+        app.config['SQLALCHEMY_DATABASE_URI'] = config.get('SQLAlchemy', 'SQLALCHEMY_DATABASE_URI')
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        log_path = config.get('Logging', 'PATH')
 
     # Logging path might be relative or starts from the root.
     # If it's relative then be sure to prepend the path with the application's root directory path.
-    log_path = config.get('Logging', 'PATH')
     if log_path.startswith('/'):
         app.config['LOG_PATH'] = log_path
     else:
